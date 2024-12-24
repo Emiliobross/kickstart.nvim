@@ -34,6 +34,15 @@ vim.opt.relativenumber = true
 vim.keymap.set('n', '<C-n>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
 vim.keymap.set('n', '<C-f>', ':NvimTreeFocus<CR>', { noremap = true, silent = true })
 
+-- Tmux Keymaps
+vim.keymap.set('n', '<C-h>', ' <cmd> TmuxNavigateLeft<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-j>', ' <cmd> TmuxNavigateDown<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-k>', ' <cmd> TmuxNavigateUp<CR>', { noremap = true, silent = true })
+vim.keymap.set('n', '<C-l>', ' <cmd> TmuxNavigateRight<CR>', { noremap = true, silent = true })
+
+-- Open Oil
+vim.keymap.set('n', '<C-o>', ' <cmd> Oil<CR>', { noremap = true, silent = true })
+
 -- NOTE: END of custom changes
 
 --[[
@@ -632,8 +641,8 @@ require('lazy').setup({
       --        For example, to see the options for `lua_ls`, you could go to: https://luals.github.io/wiki/settings/
       local servers = {
         clangd = {},
-        cmake = {},
         codelldb = {},
+        cmake = {},
         -- gopls = {},
         -- pyright = {},
         -- rust_analyzer = {},

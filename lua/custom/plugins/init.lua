@@ -5,98 +5,104 @@
 
 local custom_plugins = {
   {
-    'nvim-tree/nvim-tree.lua',
-    cmd = { 'NvimTreeToggle', 'NvimTreeFocus' },
-    opts = {
+    'ThePrimeagen/harpoon',
+    branch = 'harpoon2',
+    dependencies = { 'nvim-lua/plenary.nvim' },
+    config = function()
+      local harpoon = require 'harpoon'
 
-      filters = {
-        dotfiles = false,
-        exclude = { vim.fn.stdpath 'config' .. '/lua/custom' },
-      },
-      disable_netrw = true,
-      hijack_netrw = true,
-      hijack_cursor = true,
-      hijack_unnamed_buffer_when_opening = false,
-      sync_root_with_cwd = true,
-      update_focused_file = {
-        enable = true,
-        update_root = false,
-      },
-      view = {
-        adaptive_size = false,
-        side = 'left',
-        width = 30,
-        preserve_window_proportions = true,
-      },
-      git = {
-        enable = false,
-        ignore = true,
-      },
-      filesystem_watchers = {
-        enable = true,
-      },
-      actions = {
-        open_file = {
-          resize_window = true,
-        },
-      },
-      renderer = {
-        root_folder_label = false,
-        highlight_git = false,
-        highlight_opened_files = 'none',
+      -- REQUIRED
+      harpoon:setup()
+      -- REQUIRED
 
-        indent_markers = {
-          enable = false,
-        },
+      vim.keymap.set('n', '<leader>a', function()
+        harpoon:list():add()
+      end)
+      vim.keymap.set('n', '<C-e>', function()
+        harpoon.ui:toggle_quick_menu(harpoon:list())
+      end)
 
-        icons = {
-          show = {
-            file = true,
-            folder = true,
-            folder_arrow = true,
-            git = false,
-          },
+      --[[vim.keymap.set('n', '<C-h>', function()
+        harpoon:list():select(1)
+      end)
+      vim.keymap.set('n', '<C-t>', function()
+        harpoon:list():select(2)
+      end)
+      vim.keymap.set('n', '<C-n>', function()
+        harpoon:list():select(3)
+      end)
+      vim.keymap.set('n', '<C-s>', function()
+        harpoon:list():select(4)
+      end)]]
+      --
 
-          glyphs = {
-            -- default = "󰈚",
-            symlink = '',
-            --[[folder = {
-              default = "",
-              empty = "",
-              empty_open = "",
-              open = "",
-              symlink = "",
-              symlink_open = "",
-              arrow_open = "",
-              arrow_closed = "",
-            },]]
-            --
+      -- Toggle previous & next buffers stored within Harpoon list
+      --[[vim.keymap.set('n', '<C-S-P>', function()
+        harpoon:list():prev()
+      end)
+      vim.keymap.set('n', '<C-S-N>', function()
+        harpoon:list():next()
+      end)]]
+      --
 
-            git = {
-              unstaged = '✗',
-              staged = '✓',
-              unmerged = '',
-              renamed = '➜',
-              untracked = '★',
-              deleted = '',
-              ignored = '◌',
-            },
-          },
-        },
-      },
-      --[[ Add the on_attach function for custom mappings
-      on_attach = function(bufnr)
-        local function opts(desc)
-          return { desc = 'nvim-tree: ' .. desc, buffer = bufnr, noremap = true, silent = true, nowait = true }
+      -- basic telescope configuration
+      local conf = require('telescope.config').values
+      local function toggle_telescope(harpoon_files)
+        local finder = function()
+          local paths = {}
+          for _, item in ipairs(harpoon_files.items) do
+            table.insert(paths, item.value)
+          end
+
+          return require('telescope.finders').new_table {
+            results = paths,
+          }
         end
 
-        -- Custom mappings for toggle and focus
-        vim.keymap.set('n', '<C-n>', ':NvimTreeToggle<CR>', opts 'Toggle NvimTree')
-        vim.keymap.set('n', '<C-h>', ':NvimTreeFocus<CR>', opts 'Focus NvimTree')
-      end,]]
-      --
-    },
-    --
+        require('telescope.pickers')
+          .new({}, {
+            prompt_title = 'Harpoon',
+            finder = finder(),
+            previewer = conf.file_previewer {},
+            sorter = require('telescope.config').values.generic_sorter {},
+            layout_config = {
+              height = 0.6,
+              width = 0.6,
+              prompt_position = 'top',
+              preview_cutoff = 120,
+            },
+            attach_mappings = function(prompt_bufnr, map)
+              map('i', '<C-d>', function()
+                local state = require 'telescope.actions.state'
+                local selected_entry = state.get_selected_entry()
+                local current_picker = state.get_current_picker(prompt_bufnr)
+
+                table.remove(harpoon_files.items, selected_entry.index)
+                current_picker:refresh(finder())
+              end)
+              return true
+            end,
+          })
+          :find()
+      end
+
+      vim.keymap.set('n', '<C-e>', function()
+        toggle_telescope(harpoon:list())
+      end, { desc = 'Open harpoon window' })
+    end,
+  },
+  {
+    'stevearc/oil.nvim',
+    ---@module 'oil'
+    ---@type oil.SetupOpts
+    opts = {},
+    -- Optional dependencies
+    dependencies = { { 'echasnovski/mini.icons', opts = {} } },
+    -- dependencies = { "nvim-tree/nvim-web-devicons" }, -- use if prefer nvim-web-devicons
+  },
+  {
+    'christoomey/vim-tmux-navigator',
+    lazy = false,
   },
 }
 
