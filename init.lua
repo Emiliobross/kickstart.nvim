@@ -91,10 +91,22 @@ end
 local toggle_terminal = function()
   if not vim.api.nvim_win_is_valid(state.floating.win) then
     state.floating = create_floating_window { buf = state.floating.buf }
-    vim.cmd('lcd ' .. vim.fn.expand '%:p:h')
+
+    -- Get the current buffer's directory
+    local current_dir = vim.fn.expand '%:p:h'
+    local terminal_dir = vim.fn.getcwd()
+
+    -- Check if the directory exists and is different from the current terminal directory
+    if current_dir ~= '' and vim.fn.isdirectory(current_dir) == 1 and current_dir ~= terminal_dir then
+      vim.cmd('lcd ' .. current_dir)
+    end
+
+    -- Check if buffer is already a Terminal, if not open Terminal
     if vim.bo[state.floating.buf].buftype ~= 'terminal' then
       vim.cmd.terminal()
     end
+
+    -- Automatically enter insert mode when opening Floaterminal
     vim.cmd 'startinsert'
   else
     vim.api.nvim_win_hide(state.floating.win)
