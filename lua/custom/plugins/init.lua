@@ -5,6 +5,39 @@
 
 local custom_plugins = {
   {
+    'folke/noice.nvim',
+    event = 'VeryLazy',
+    dependencies = {
+      -- if you lazy-load any plugin below, make sure to add proper `module="..."` entries
+      'MunifTanjim/nui.nvim',
+      -- OPTIONAL:
+      --   `nvim-notify` is only needed, if you want to use the notification view.
+      --   If not available, we use `mini` as the fallback
+      'rcarriga/nvim-notify',
+    },
+    config = function()
+      require('noice').setup {
+        lsp = {
+          -- override markdown rendering so that **cmp** and other plugins use **Treesitter**
+          override = {
+            ['vim.lsp.util.convert_input_to_markdown_lines'] = true,
+            ['vim.lsp.util.stylize_markdown'] = true,
+            ['cmp.entry.get_documentation'] = true, -- requires hrsh7th/nvim-cmp
+          },
+        },
+        -- you can enable a preset for easier configuration
+        presets = {
+          bottom_search = true, -- use a classic bottom cmdline for search
+          command_palette = true, -- position the cmdline and popupmenu together
+          long_message_to_split = true, -- long messages will be sent to a split
+          inc_rename = false, -- enables an input dialog for inc-rename.nvim
+          lsp_doc_border = false, -- add a border to hover docs and signature help
+        },
+      }
+      vim.keymap.set('n', '<leader>nd', ' <cmd>NoiceDismiss<CR> ', { desc = 'Dismiss Noice Message' })
+    end,
+  },
+  {
     'ThePrimeagen/harpoon',
     branch = 'harpoon2',
     dependencies = { 'nvim-lua/plenary.nvim' },
@@ -17,33 +50,34 @@ local custom_plugins = {
 
       vim.keymap.set('n', '<leader>a', function()
         harpoon:list():add()
-      end)
+      end, { desc = 'Add current file to Harpoon List' })
       vim.keymap.set('n', '<C-e>', function()
         harpoon.ui:toggle_quick_menu(harpoon:list())
       end)
 
-      --[[vim.keymap.set('n', '<C-h>', function()
+      vim.keymap.set('n', '<leader>u', function()
         harpoon:list():select(1)
-      end)
-      vim.keymap.set('n', '<C-t>', function()
+      end, { noremap = true, silent = true, desc = 'Select first item in Harpoon List' })
+      vim.keymap.set('n', '<leader>i', function()
         harpoon:list():select(2)
-      end)
-      vim.keymap.set('n', '<C-n>', function()
+      end, { noremap = true, silent = true, desc = 'Select second item in Harpoon List' })
+      vim.keymap.set('n', '<leader>o', function()
         harpoon:list():select(3)
-      end)
-      vim.keymap.set('n', '<C-s>', function()
+      end, { noremap = true, silent = true, desc = 'Select third item in Harpoon List' })
+      vim.keymap.set('n', '<leader>p', function()
         harpoon:list():select(4)
-      end)]]
-      --
+      end, { noremap = true, silent = true, desc = 'Select fourth item in Harpoon List' })
+      vim.keymap.set('n', '<leader>ü', function()
+        harpoon:list():select(5)
+      end, { noremap = true, silent = true, desc = 'Select fifth item in Harpoon List' })
 
       -- Toggle previous & next buffers stored within Harpoon list
-      --[[vim.keymap.set('n', '<C-S-P>', function()
+      vim.keymap.set('n', '<C-S-P>', function()
         harpoon:list():prev()
       end)
       vim.keymap.set('n', '<C-S-N>', function()
         harpoon:list():next()
-      end)]]
-      --
+      end)
 
       -- basic telescope configuration
       local conf = require('telescope.config').values

@@ -23,16 +23,17 @@
 --]]
 -- NOTE: This Section contains some custom changes:
 
+vim.opt.tabstop = 4
+vim.opt.softtabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.expandtab = true
+
 -- Required by nvim-tree.
 vim.g.loaded_netrw = 1
 vim.g.loaded_netrwPlugin = 1
 
 -- Setting for relative line numbers
 vim.opt.relativenumber = true
-
--- NvimTree Keymaps
-vim.keymap.set('n', '<C-n>', ':NvimTreeToggle<CR>', { noremap = true, silent = true })
-vim.keymap.set('n', '<C-f>', ':NvimTreeFocus<CR>', { noremap = true, silent = true })
 
 -- Tmux Keymaps
 vim.keymap.set('n', '<C-h>', ' <cmd> TmuxNavigateLeft<CR>', { noremap = true, silent = true })
@@ -42,6 +43,68 @@ vim.keymap.set('n', '<C-l>', ' <cmd> TmuxNavigateRight<CR>', { noremap = true, s
 
 -- Open Oil
 vim.keymap.set('n', '<C-o>', ' <cmd> Oil<CR>', { noremap = true, silent = true })
+
+-- Floaterminal
+vim.keymap.set('t', '<esc><esc>', '<c-\\><c-n>')
+
+local state = {
+  floating = {
+    buf = -1,
+    win = -1,
+  },
+}
+
+local function create_floating_window(opts)
+  opts = opts or {}
+  local width = opts.width or math.floor(vim.o.columns * 0.8)
+  local height = opts.height or math.floor(vim.o.lines * 0.8)
+
+  -- Calculate the position to center the window
+  local col = math.floor((vim.o.columns - width) / 2)
+  local row = math.floor((vim.o.lines - height) / 2)
+
+  -- Create a buffer
+  local buf = nil
+  if vim.api.nvim_buf_is_valid(opts.buf) then
+    buf = opts.buf
+  else
+    buf = vim.api.nvim_create_buf(false, true) -- No file, scratch buffer
+  end
+
+  -- Define window configuration
+  local win_config = {
+    relative = 'editor',
+    width = width,
+    height = height,
+    col = col,
+    row = row,
+    style = 'minimal', -- No borders or extra UI elements
+    border = 'rounded',
+  }
+
+  -- Create the floating window
+  local win = vim.api.nvim_open_win(buf, true, win_config)
+
+  return { buf = buf, win = win }
+end
+
+local toggle_terminal = function()
+  if not vim.api.nvim_win_is_valid(state.floating.win) then
+    state.floating = create_floating_window { buf = state.floating.buf }
+    vim.cmd('lcd ' .. vim.fn.expand '%:p:h')
+    if vim.bo[state.floating.buf].buftype ~= 'terminal' then
+      vim.cmd.terminal()
+    end
+    vim.cmd 'startinsert'
+  else
+    vim.api.nvim_win_hide(state.floating.win)
+  end
+end
+
+-- Example usage:
+-- Create a floating window with default dimensions
+vim.api.nvim_create_user_command('Floaterminal', toggle_terminal, {})
+vim.keymap.set({ 'n', 't' }, '<space>tt', toggle_terminal, { noremap = true, silent = true, desc = 'Toggle Floating Terminal' })
 
 -- NOTE: END of custom changes
 
@@ -423,7 +486,7 @@ require('lazy').setup({
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
       pcall(require('telescope').load_extension, 'ui-select')
-
+      pcall(require('telescope').load_extension, 'noice')
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
@@ -684,6 +747,7 @@ require('lazy').setup({
       local ensure_installed = vim.tbl_keys(servers or {})
       vim.list_extend(ensure_installed, {
         'stylua', -- Used to format Lua code
+        'clang-format',
       })
       require('mason-tool-installer').setup { ensure_installed = ensure_installed }
 
@@ -736,6 +800,7 @@ require('lazy').setup({
       end,
       formatters_by_ft = {
         lua = { 'stylua' },
+        cpp = { 'clang-format' },
         -- Conform can also run multiple formatters sequentially
         -- python = { "isort", "black" },
         --
@@ -765,12 +830,12 @@ require('lazy').setup({
           -- `friendly-snippets` contains a variety of premade snippets.
           --    See the README about individual language/framework/plugin snippets:
           --    https://github.com/rafamadriz/friendly-snippets
-          -- {
-          --   'rafamadriz/friendly-snippets',
-          --   config = function()
-          --     require('luasnip.loaders.from_vscode').lazy_load()
-          --   end,
-          -- },
+          {
+            'rafamadriz/friendly-snippets',
+            config = function()
+              require('luasnip.loaders.from_vscode').lazy_load()
+            end,
+          },
         },
       },
       'saadparwaiz1/cmp_luasnip',
@@ -780,6 +845,7 @@ require('lazy').setup({
       --  into multiple repos for maintenance purposes.
       'hrsh7th/cmp-nvim-lsp',
       'hrsh7th/cmp-path',
+      'hrsh7th/cmp-buffer',
     },
     config = function()
       -- See `:help cmp`
@@ -866,14 +932,29 @@ require('lazy').setup({
     -- change the command in the config to whatever the name of that colorscheme is.
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-    'folke/tokyonight.nvim',
+
+    --'folke/tokyonight.nvim',
+
+    -- NOTE: currently not in use:
+
+    'catppuccin/nvim',
+
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()
+      require('catppuccin').setup {
+        custom_highlights = function(colors)
+          return {
+            Comment = { fg = colors.sky },
+            TabLineSel = { bg = colors.pink },
+            CmpBorder = { fg = colors.surface2 },
+            Pmenu = { bg = colors.none },
+          }
+        end,
+      }
       -- Load the colorscheme here.
       -- Like many other themes, this one has different styles, and you could load
       -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-      vim.cmd.colorscheme 'tokyonight-storm'
-
+      vim.cmd.colorscheme 'catppuccin-mocha'
       -- You can configure highlights by doing something like:
       vim.cmd.hi 'Comment gui=none'
     end,
