@@ -90,6 +90,9 @@ local custom_plugins = {
       vim.keymap.set('n', '<leader>ü', function()
         harpoon:list():select(5)
       end, { noremap = true, silent = true, desc = 'Select fifth item in Harpoon List' })
+      vim.keymap.set('n', '<leader>+', function()
+        harpoon:list():select(6)
+      end, { noremap = true, silent = true, desc = 'Select sixth item in Harpoon List' })
 
       -- Toggle previous & next buffers stored within Harpoon list
       vim.keymap.set('n', '<C-S-P>', function()
