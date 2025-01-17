@@ -610,6 +610,9 @@ require('lazy').setup({
             vim.keymap.set(mode, keys, func, { buffer = event.buf, desc = 'LSP: ' .. desc })
           end
 
+          -- Mapping for Clangd
+          map('<leader>cs', '<cmd> ClangdSwitchSourceHeader<CR>', 'Switch between Source/Header and Header/Source')
+
           -- Jump to the definition of the word under your cursor.
           --  This is where a variable was first declared, or where a function is defined, etc.
           --  To jump back, press <C-t>.

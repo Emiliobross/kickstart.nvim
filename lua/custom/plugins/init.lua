@@ -103,7 +103,8 @@ local custom_plugins = {
       end)
 
       -- basic telescope configuration
-      local conf = require('telescope.config').values
+      -- Commented until a solution for swapping files in the list was found
+      --[[local conf = require('telescope.config').values
       local function toggle_telescope(harpoon_files)
         local finder = function()
           local paths = {}
@@ -142,10 +143,12 @@ local custom_plugins = {
           })
           :find()
       end
+      
 
       vim.keymap.set('n', '<C-e>', function()
         toggle_telescope(harpoon:list())
-      end, { desc = 'Open harpoon window' })
+      end, { desc = 'Open harpoon window' })]]
+      --
     end,
   },
   {
@@ -160,6 +163,20 @@ local custom_plugins = {
   {
     'christoomey/vim-tmux-navigator',
     lazy = false,
+  },
+  {
+    'folke/flash.nvim',
+    event = 'VeryLazy',
+    ---@type Flash.Config
+    opts = {},
+  -- stylua: ignore
+  keys = {
+    { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },
+    { "S", mode = { "n", "x", "o" }, function() require("flash").treesitter() end, desc = "Flash Treesitter" },
+    { "r", mode = "o", function() require("flash").remote() end, desc = "Remote Flash" },
+    { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
+    { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
+  },
   },
 }
 
