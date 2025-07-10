@@ -723,8 +723,23 @@ require('lazy').setup({
         cmake = {},
         pyright = {},
         pylsp = {},
-        --ocamlls = {},
-        --ocamllsp = {},
+        ocamllsp = {},
+        ocamlformat = {},
+        omnisharp = {
+          cmd = {
+            'dotnet',
+            vim.fn.stdpath 'data' .. '/mason/packages/omnisharp/OmniSharp.dll',
+          },
+          settings = {
+            FormattingOptions = {
+              EnableEditorConfigSupport = false,
+              OrganizeImports = true,
+            },
+            Sdk = {
+              IncludePrereleases = true,
+            },
+          },
+        },
         -- gopls = {},
         -- rust_analyzer = {},
         -- ... etc. See `:help lspconfig-all` for a list of all the pre-configured LSPs
@@ -951,11 +966,11 @@ require('lazy').setup({
     --
     -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
 
-    --'folke/tokyonight.nvim',
+    'catppuccin/nvim',
 
     -- NOTE: currently not in use:
 
-    'catppuccin/nvim',
+    --'folke/tokyonight.nvim',
 
     priority = 1000, -- Make sure to load this before all the other start plugins.
     init = function()

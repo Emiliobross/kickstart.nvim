@@ -45,6 +45,16 @@ local custom_plugins = {
             ['cmp.entry.get_documentation'] = true, -- requires hrsh7th/nvim-cmp
           },
         },
+        messages = {
+          -- NOTE: If you enable messages, then the cmdline is enabled automatically.
+          -- This is a current Neovim limitation.
+          enabled = false, -- enables the Noice messages UI
+          view = 'notify', -- default view for messages
+          view_error = 'notify', -- view for errors
+          view_warn = 'notify', -- view for warnings
+          view_history = 'messages', -- view for :messages
+          view_search = 'virtualtext', -- view for search count messages. Set to `false` to disable
+        },
         -- you can enable a preset for easier configuration
         presets = {
           bottom_search = true, -- use a classic bottom cmdline for search
@@ -177,6 +187,33 @@ local custom_plugins = {
     { "R", mode = { "o", "x" }, function() require("flash").treesitter_search() end, desc = "Treesitter Search" },
     { "<c-s>", mode = { "c" }, function() require("flash").toggle() end, desc = "Toggle Flash Search" },
   },
+  },
+  {
+    'lvimuser/lsp-inlayhints.nvim',
+    event = 'LspAttach',
+    config = function()
+      local inlayhints = require 'lsp-inlayhints'
+
+      inlayhints.setup {
+        inlay_hints = {
+          -- This will show parameter hints *above* function definitions
+          only_current_line = false,
+          eol = false, -- disable end-of-line hints
+          show_parameter_hints = true,
+          parameter_hints_prefix = '← ', -- customize if you want
+          other_hints_prefix = '⇒ ',
+        },
+      }
+
+      vim.api.nvim_create_autocmd('LspAttach', {
+        callback = function(args)
+          local client = vim.lsp.get_client_by_id(args.data.client_id)
+          if client and client.name == 'ocamllsp' then
+            inlayhints.on_attach(client, args.buf)
+          end
+        end,
+      })
+    end,
   },
 }
 
