@@ -189,31 +189,36 @@ local custom_plugins = {
   },
   },
   {
-    'lvimuser/lsp-inlayhints.nvim',
-    event = 'LspAttach',
-    config = function()
-      local inlayhints = require 'lsp-inlayhints'
+    'scalameta/nvim-metals',
+    ft = { 'scala', 'sbt', 'java' },
+    opts = function()
+      local metals_config = require('metals').bare_config()
+      metals_config.on_attach = function(client, bufnr)
+        -- your on_attach function
+      end
 
-      inlayhints.setup {
-        inlay_hints = {
-          -- This will show parameter hints *above* function definitions
-          only_current_line = false,
-          eol = false, -- disable end-of-line hints
-          show_parameter_hints = true,
-          parameter_hints_prefix = '← ', -- customize if you want
-          other_hints_prefix = '⇒ ',
-        },
-      }
-
-      vim.api.nvim_create_autocmd('LspAttach', {
-        callback = function(args)
-          local client = vim.lsp.get_client_by_id(args.data.client_id)
-          if client and client.name == 'ocamllsp' then
-            inlayhints.on_attach(client, args.buf)
-          end
+      return metals_config
+    end,
+    config = function(self, metals_config)
+      local nvim_metals_group = vim.api.nvim_create_augroup('nvim-metals', { clear = true })
+      vim.api.nvim_create_autocmd('FileType', {
+        pattern = self.ft,
+        callback = function()
+          require('metals').initialize_or_attach(metals_config)
         end,
+        group = nvim_metals_group,
       })
     end,
+  },
+  {
+    'chikko80/error-lens.nvim',
+    event = 'BufRead',
+    dependencies = {
+      'nvim-telescope/telescope.nvim',
+    },
+    opts = {
+      -- your options go here
+    },
   },
 }
 
