@@ -220,6 +220,11 @@ local custom_plugins = {
       -- your options go here
     },
   },
+  {
+    'benomahony/oil-git.nvim',
+    dependencies = { 'stevearc/oil.nvim' },
+    -- No opts or config needed! Works automatically
+  },
 }
 
 return custom_plugins
